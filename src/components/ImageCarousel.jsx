@@ -1,7 +1,7 @@
-import { useFrame, useLoader, useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useTexture } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three/webgpu";
-import { TextureLoader } from "three";
 import {
   abs,
   add,
@@ -128,15 +128,7 @@ export function ImageCarousel({
   const targetRotationRef = useRef(0);
   const isSnapping = useRef(false);
 
-  const textures = useLoader(TextureLoader, images, (loader) => {
-    loader.crossOrigin = "anonymous";
-  });
-
-  useMemo(() => {
-    textures.forEach((t) => {
-      t.colorSpace = THREE.SRGBColorSpace;
-    });
-  }, [textures]);
+  const textures = useTexture(images);
 
   useEffect(() => {
     const canvas = gl.domElement;
