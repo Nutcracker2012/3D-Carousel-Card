@@ -23,14 +23,18 @@ export const Experience = () => {
       fov:     { value: 70,  min: 20,  max: 120, step: 1   },
     }),
     Carousel: folder({
-      radius: { value: 5,   min: 2,   max: 15,  step: 0.5 },
-      tiltX:  { value: -13, min: -90, max: 90,  step: 1   },
+      radius: { value: 5,   min: 2,   max: 15,  step: 0.5  },
+      tiltX:  { value: -13, min: -90, max: 90,  step: 1    },
+      scale:  { value: 1.0, min: 0.3, max: 3.0, step: 0.05 },
+      scaleY: { value: 1.0, min: 0.3, max: 3.0, step: 0.05 },
     }),
     "Card Size": folder({
-      imageWidth:   { value: 1.5,  min: 0.5, max: 5,   step: 0.1  },
-      imageHeight:  { value: 2.5,  min: 0.5, max: 6,   step: 0.1  },
-      cornerRadius: { value: 0.1,  min: 0,   max: 0.5, step: 0.01 },
-      bendAmount:   { value: 0.1,  min: 0,   max: 1,   step: 0.05 },
+      imageWidth:     { value: 1.5,  min: 0.5, max: 5,   step: 0.1  },
+      imageHeight:    { value: 2.5,  min: 0.5, max: 6,   step: 0.1  },
+      cornerRadius:   { value: 0.1,  min: 0,   max: 0.5, step: 0.01 },
+      bendAmount:     { value: 0.1,  min: 0,   max: 1,   step: 0.05 },
+      widthSegments:  { value: 32,   min: 4,   max: 64,  step: 4    },
+      heightSegments: { value: 32,   min: 4,   max: 64,  step: 4    },
     }),
     "Card Visuals": folder({
       centerOpacity:    { value: 1.0, min: 0,   max: 1.0, step: 0.05 },
@@ -60,10 +64,14 @@ export const Experience = () => {
         images={IMAGES}
         radius={controls.radius}
         tiltX={controls.tiltX}
+        scale={controls.scale}
+        scaleY={controls.scaleY}
         imageWidth={controls.imageWidth}
         imageHeight={controls.imageHeight}
         cornerRadius={controls.cornerRadius}
         bendAmount={controls.bendAmount}
+        widthSegments={controls.widthSegments}
+        heightSegments={controls.heightSegments}
         centerOpacity={controls.centerOpacity}
         adjacentOpacity={controls.adjacentOpacity}
         farOpacity={controls.farOpacity}

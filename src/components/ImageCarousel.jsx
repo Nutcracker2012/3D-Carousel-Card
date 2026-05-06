@@ -30,6 +30,8 @@ function ImagePlane({
   radius,
   imageWidth,
   imageHeight,
+  widthSegments,
+  heightSegments,
   cornerRadius,
   bendAmount,
   centerOpacity,
@@ -93,7 +95,7 @@ function ImagePlane({
 
   return (
     <mesh ref={meshRef} position={[x, 0, z]} material={material}>
-      <planeGeometry args={[imageWidth, imageHeight, 32, 32]} />
+      <planeGeometry args={[imageWidth, imageHeight, widthSegments, heightSegments]} />
     </mesh>
   );
 }
@@ -102,10 +104,14 @@ export function ImageCarousel({
   images = [],
   radius = 5,
   tiltX = -13,
+  scale = 1.0,
+  scaleY = 1.0,
   imageWidth = 1.5,
   imageHeight = 2.5,
   cornerRadius = 0.1,
   bendAmount = 0.1,
+  widthSegments = 32,
+  heightSegments = 32,
   centerOpacity = 1.0,
   adjacentOpacity = 0.9,
   farOpacity = 0.6,
@@ -247,7 +253,7 @@ export function ImageCarousel({
   if (!images.length) return null;
 
   return (
-    <group ref={groupRef} rotation-x={THREE.MathUtils.degToRad(tiltX)}>
+    <group ref={groupRef} rotation-x={THREE.MathUtils.degToRad(tiltX)} scale={[scale, scale * scaleY, scale]}>
       {images.map((img, i) => (
         <ImagePlane
           key={`${img}-${i}`}
@@ -258,6 +264,8 @@ export function ImageCarousel({
           radius={radius}
           imageWidth={imageWidth}
           imageHeight={imageHeight}
+          widthSegments={widthSegments}
+          heightSegments={heightSegments}
           cornerRadius={cornerRadius}
           bendAmount={bendAmount}
           centerOpacity={centerOpacity}
