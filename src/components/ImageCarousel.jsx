@@ -11,23 +11,23 @@ import {
   mix,
   mul,
   positionLocal,
+  saturation,
   smoothstep,
   sub,
   texture,
+  uniform,
   uv,
   vec3,
   vec4,
 } from "three/tsl";
 import { NodeMaterial } from "three/webgpu";
 
-const CAROUSEL_RADIUS = 5;
-const TILT_X = THREE.MathUtils.degToRad(-13);
-
 function ImagePlane({
   tex,
   index,
   total,
   currentIndex,
+  radius,
   imageWidth,
   imageHeight,
   cornerRadius,
@@ -35,19 +35,27 @@ function ImagePlane({
   centerOpacity,
   adjacentOpacity,
   farOpacity,
+  centerSaturation,
+  farSaturation,
+  brightness,
 }) {
   const meshRef = useRef();
   const angle = (index / total) * Math.PI * 2;
-  const x = Math.sin(angle) * CAROUSEL_RADIUS;
-  const z = Math.cos(angle) * CAROUSEL_RADIUS;
+  const x = Math.sin(angle) * radius;
+  const z = Math.cos(angle) * radius;
 
-  const opacity = useMemo(() => {
-    let dist = Math.abs(index - currentIndex);
-    if (dist > total / 2) dist = total - dist;
-    if (dist === 0) return centerOpacity;
-    if (dist === 1) return adjacentOpacity;
-    return farOpacity;
-  }, [index, currentIndex, total, centerOpacity, adjacentOpacity, farOpacity]);
+  // TSL uniforms — mutate .value each render, no material rebuild needed
+  const satUniform   = useRef(uniform(1.0));
+  const brightUniform = useRef(uniform(1.0));
+
+  // Compute distance from front card
+  let dist = Math.abs(index - currentIndex);
+  if (dist > total / 2) dist = total - dist;
+
+  const opacity = dist === 0 ? centerOpacity : dist === 1 ? adjacentOpacity : farOpacity;
+  const t = dist === 0 ? 1 : dist === 1 ? 0.5 : 0;
+  satUniform.current.value    = THREE.MathUtils.lerp(farSaturation, centerSaturation, t);
+  brightUniform.current.value = brightness;
 
   useFrame(() => {
     if (meshRef.current)
@@ -66,17 +74,14 @@ function ImagePlane({
       add(positionLocal.z, curvature)
     );
 
-    // Texture + rounded-corner mask via SDF
-    const uvCoords = uv();
+    // Texture + saturation + brightness + rounded-corner SDF mask
+    const uvCoords   = uv();
     const imageColor = texture(tex, uvCoords);
-    const center = sub(uvCoords, 0.5);
-    const d = length(max(sub(abs(center), 0.5 - cornerRadius), 0.0));
-    const mask = smoothstep(
-      add(cornerRadius, 0.01),
-      sub(cornerRadius, 0.01),
-      d
-    );
-    mat.colorNode = mix(vec4(0, 0, 0, 0), imageColor, mask);
+    const adjusted   = saturation(mul(imageColor, brightUniform.current), satUniform.current);
+    const center     = sub(uvCoords, 0.5);
+    const d          = length(max(sub(abs(center), 0.5 - cornerRadius), 0.0));
+    const mask       = smoothstep(add(cornerRadius, 0.01), sub(cornerRadius, 0.01), d);
+    mat.colorNode    = mix(vec4(0, 0, 0, 0), adjusted, mask);
 
     mat.transparent = true;
     mat.side = THREE.DoubleSide;
@@ -95,6 +100,8 @@ function ImagePlane({
 
 export function ImageCarousel({
   images = [],
+  radius = 5,
+  tiltX = -13,
   imageWidth = 1.5,
   imageHeight = 2.5,
   cornerRadius = 0.1,
@@ -102,6 +109,9 @@ export function ImageCarousel({
   centerOpacity = 1.0,
   adjacentOpacity = 0.9,
   farOpacity = 0.6,
+  centerSaturation = 1.0,
+  farSaturation = 0.5,
+  brightness = 1.0,
   friction = 0.95,
   wheelSensitivity = 100,
   dragSensitivity = 300,
@@ -245,7 +255,7 @@ export function ImageCarousel({
   if (!images.length) return null;
 
   return (
-    <group ref={groupRef} rotation-x={TILT_X}>
+    <group ref={groupRef} rotation-x={THREE.MathUtils.degToRad(tiltX)}>
       {images.map((img, i) => (
         <ImagePlane
           key={`${img}-${i}`}
@@ -253,6 +263,7 @@ export function ImageCarousel({
           index={i}
           total={images.length}
           currentIndex={currentIndex}
+          radius={radius}
           imageWidth={imageWidth}
           imageHeight={imageHeight}
           cornerRadius={cornerRadius}
@@ -260,6 +271,9 @@ export function ImageCarousel({
           centerOpacity={centerOpacity}
           adjacentOpacity={adjacentOpacity}
           farOpacity={farOpacity}
+          centerSaturation={centerSaturation}
+          farSaturation={farSaturation}
+          brightness={brightness}
         />
       ))}
     </group>
