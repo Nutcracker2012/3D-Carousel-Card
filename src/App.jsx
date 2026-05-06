@@ -7,7 +7,7 @@ function App() {
   return (
     <Canvas
       shadows
-      camera={{ position: [0, 0, 12], fov: 50 }}
+      camera={{ position: [0, 0, 10], fov: 70 }}
       gl={async (props) => {
         extend(THREE);
         const renderer = new THREE.WebGPURenderer(props);
@@ -15,7 +15,7 @@ function App() {
         return renderer;
       }}
     >
-      <color attach="background" args={["#ffffff"]} />
+      <color attach="background" args={["#e2e2e2"]} />
       <Experience />
     </Canvas>
   );
